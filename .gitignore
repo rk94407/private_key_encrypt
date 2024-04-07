@@ -1,0 +1,15 @@
+# Enviornment variable
+.env
+
+
+# Images
+/images
+
+# Screenshots
+Screenshot *.png
+
+
+# Power Point Presentation
+.ppt
+.pptx
+Private Key Presentation.pptx
