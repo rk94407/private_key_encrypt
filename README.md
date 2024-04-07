@@ -4,7 +4,7 @@ This document provides step-by-step instructions for running the encryption code
 
 # 2. Prerequisites:
 
-Python installed on your system.
+Python should be installed on your system or install from “https://www.python.org/downloads/"
 Installation of required libraries: <b> "pycryptodome" <b> and <b> "python-dotenv" <b>.
 
 # 3. Setup:
@@ -16,7 +16,7 @@ Installation of required libraries: <b> "pycryptodome" <b> and <b> "python-doten
 # 4. Running the Code:
 
 1. Open a terminal or command prompt.
-2. Navigate to the directory containing the Python script (encryption_code.py).
+2. Navigate to the directory containing the Python script (main.py).
 3. Run the script using the following command: <b> python3 main.py <b> (Depends on the version you have, if you have latest version of python then you have to use python3 otherwise just python)
 
 # 5. Understanding the Code:
