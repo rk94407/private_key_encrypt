@@ -9,11 +9,9 @@ Installation of required libraries: <b> "pycryptodome" <b> and <b> "python-doten
 
 # 3. Setup:
 
-### 1. 
-Install required libraries using pip: <b> pip install pycryptodome python-dotenv <b>
+1. Install required libraries using pip: <b> pip install pycryptodome python-dotenv <b>
 
-### 2.
-Create a .env file in the project directory and add the following line with your desired encryption key: <b> ENCRYPTION_KEY=your_encryption_key_here <b>
+2. Create a .env file in the project directory and add the following line with your desired encryption key: <b> ENCRYPTION_KEY=your_encryption_key_here <b>
 
 # 4. Running the Code:
 
