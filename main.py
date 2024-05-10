@@ -1,48 +1,42 @@
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-from Crypto.Protocol.KDF import PBKDF2
 import os
 from dotenv import load_dotenv
 import base64
 
+def encrypt_data(data, password):
+    # Encrypt the data using AES encryption with a password.
+    key = password.encode().ljust(32, b'\0')  # Ensures the key is 32 bytes
+    cipher = AES.new(key, AES.MODE_EAX)
+    ciphertext, tag = cipher.encrypt_and_digest(data.encode('utf-8'))  # Ensure data is bytes
+    return base64.b64encode(ciphertext), base64.b64encode(cipher.nonce), base64.b64encode(tag)
 
-def generate_private_key():
-    # Generate a random private key.
-    private_key = get_random_bytes(16)  # Using 16 bytes (128 bits) for AES encryption
-    return private_key
-
-
-def encrypt_private_key(private_key, password):
-    # Encrypt the private key using AES encryption with a password.
-    cipher = AES.new(password.encode(), AES.MODE_EAX)
-    ciphertext, tag = cipher.encrypt_and_digest(private_key)
-    return ciphertext, cipher.nonce, tag
-
-
-def decrypt_private_key(ciphertext, nonce, tag, password):
+def decrypt_data(ciphertext, nonce, tag, password):
     # Decrypt the ciphertext using AES decryption with the password.
-    cipher = AES.new(password.encode(), AES.MODE_EAX, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext)
+    key = password.encode().ljust(32, b'\0')  # Ensures the key is 32 bytes
+    ciphertext = base64.b64decode(ciphertext)
+    nonce = base64.b64decode(nonce)
+    tag = base64.b64decode(tag)
+    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
     try:
-        cipher.verify(tag)
-        return plaintext
+        plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+        return plaintext.decode('utf-8')
     except ValueError:
         return "Decryption failed."
-
-
-# Generate private key
-private_key = generate_private_key()
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Encrypt private key with a password
-password = os.environ.get("ENCRYPTION_KEY")
-ciphertext, nonce, tag = encrypt_private_key(private_key, password)
+# Read data from the user
+data = input("Please enter the text to encrypt: ")
 
-# Print encrypted private key
-print("Encrypted Private Key:", base64.b64encode(ciphertext))
+# Encrypt the data with a password
+password = os.getenv("ENCRYPTION_KEY", "default_secret")  # Default to 'default_secret' if not found
+encrypted_data, nonce, tag = encrypt_data(data, password)
 
-# Decrypt the encrypted private key
-decrypted_private_key = decrypt_private_key(ciphertext, nonce, tag, password)
-print("Decrypted Private Key:", decrypted_private_key)
+# Print encrypted data
+print("Encrypted Data:", encrypted_data.decode())
+
+# Decrypt the encrypted data
+decrypted_data = decrypt_data(encrypted_data, nonce, tag, password)
+print("Decrypted Data:", decrypted_data)
