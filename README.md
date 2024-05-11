@@ -23,8 +23,6 @@ If you are using a system where Python 3 is not the default Python interpreter (
 Create a .env file in your project directory and specify your encryption key like so:
 - `ENCRYPTION_KEY=your_encryption_key_here`
 
-In our code it is: `ENCRYPTION_KEY=mysecretpassword`
-
 ## 3. Running the Code
 To run the script:
 Execute by running the command:
