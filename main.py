@@ -1,42 +1,89 @@
+import os
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-import os
-from dotenv import load_dotenv
+from openpyxl import Workbook, load_workbook
+from Crypto.Hash import SHA256
 import base64
+import logging
+from datetime import datetime
 
-def encrypt_data(data, password):
-    # Encrypt the data using AES encryption with a password.
-    key = password.encode().ljust(32, b'\0')  # Ensures the key is 32 bytes
-    cipher = AES.new(key, AES.MODE_EAX)
-    ciphertext, tag = cipher.encrypt_and_digest(data.encode('utf-8'))  # Ensure data is bytes
-    return base64.b64encode(ciphertext), base64.b64encode(cipher.nonce), base64.b64encode(tag)
+# Set up basic configuration for logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def decrypt_data(ciphertext, nonce, tag, password):
-    # Decrypt the ciphertext using AES decryption with the password.
-    key = password.encode().ljust(32, b'\0')  # Ensures the key is 32 bytes
-    ciphertext = base64.b64decode(ciphertext)
-    nonce = base64.b64decode(nonce)
-    tag = base64.b64decode(tag)
-    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
+def input_private_key():
+    """Prompt user to input their own private key and convert it to a suitable AES key."""
+    key_input = input("Enter your private key (any string, will be hashed to create a key): ")
+    hasher = SHA256.new()
+    hasher.update(key_input.encode('utf-8'))
+    raw_key = hasher.digest()  # This will be a 32-byte key
+    base64_key = base64.b64encode(raw_key).decode('utf-8')
+    return raw_key, base64_key
+
+def generate_private_key():
+    """Generate a new private key and encode it in base64, ensuring it's 32 bytes (AES-256)."""
+    private_key = get_random_bytes(32)  # 256-bit AES key
+    encoded_key = base64.b64encode(private_key).decode('utf-8')
+    return private_key, encoded_key
+
+def save_data_to_excel(date_time, key, original_text, encrypted_text):
+    """Save the data to an Excel file."""
+    filename = 'keys.xlsx'
     try:
+        # Try to load an existing workbook
+        wb = load_workbook(filename)
+    except FileNotFoundError:
+        # Create a new workbook if not found
+        wb = Workbook()
+        ws = wb.active
+        ws.append(['Date and Time', 'Key (Base64)', 'Original Text', 'Encrypted Text'])
+    else:
+        ws = wb.active
+
+    # Append the new data along with the current date and time
+    ws.append([date_time, key, original_text, encrypted_text])
+    wb.save(filename)
+    logging.info("Data saved to keys.xlsx")
+
+def encrypt_data(data, key):
+    """Encrypt the data using AES encryption with a given key."""
+    cipher = AES.new(key, AES.MODE_EAX)
+    ciphertext, tag = cipher.encrypt_and_digest(data.encode('utf-8'))
+    return base64.b64encode(ciphertext).decode(), base64.b64encode(cipher.nonce).decode(), base64.b64encode(tag).decode()
+
+def decrypt_data(ciphertext, nonce, tag, key):
+    """Decrypt the ciphertext using AES decryption with the given key."""
+    try:
+        ciphertext = base64.b64decode(ciphertext)
+        nonce = base64.b64decode(nonce)
+        tag = base64.b64decode(tag)
+        cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
         plaintext = cipher.decrypt_and_verify(ciphertext, tag)
         return plaintext.decode('utf-8')
     except ValueError:
+        logging.error("Decryption failed.")
         return "Decryption failed."
 
-# Load environment variables from .env file
-load_dotenv()
+def encrypt_or_decrypt_flow():
+    """Main flow for encrypting or decrypting based on user input."""
+    choice = input("Would you like to input your own private key? (yes/no): ")
+    if choice.lower() == 'yes':
+        key, encoded_key = input_private_key()
+    else:
+        key, encoded_key = generate_private_key()
 
-# Read data from the user
-data = input("Please enter the text to encrypt: ")
+    # Get user input for text to encrypt
+    data = input("Please enter the text to encrypt: ")
+    encrypted_data, nonce, tag = encrypt_data(data, key)
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    save_data_to_excel(now, encoded_key, data, encrypted_data)
 
-# Encrypt the data with a password
-password = os.getenv("ENCRYPTION_KEY", "default_secret")  # Default to 'default_secret' if not found
-encrypted_data, nonce, tag = encrypt_data(data, password)
+    # Display encrypted data
+    print("Encrypted Data:", encrypted_data)
 
-# Print encrypted data
-print("Encrypted Data:", encrypted_data.decode())
+    # Decrypt option
+    if input("Do you want to decrypt this data now? (yes/no) ").lower() == 'yes':
+        decrypted_data = decrypt_data(encrypted_data, nonce, tag, key)
+        print("Decrypted Data:", decrypted_data)
 
-# Decrypt the encrypted data
-decrypted_data = decrypt_data(encrypted_data, nonce, tag, password)
-print("Decrypted Data:", decrypted_data)
+if __name__ == '__main__':
+    encrypt_or_decrypt_flow()
