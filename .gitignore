@@ -13,3 +13,8 @@ Screenshot *.png
 .ppt
 .pptx
 Private Key Presentation.pptx
+
+# Excel
+keys.xlsx
+*.xlsx
+.xls

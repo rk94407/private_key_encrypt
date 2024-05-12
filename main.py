@@ -29,17 +29,14 @@ def save_data_to_excel(date_time, key, original_text, encrypted_text):
     """Save the data to an Excel file."""
     filename = 'keys.xlsx'
     try:
-        # Try to load an existing workbook
         wb = load_workbook(filename)
     except FileNotFoundError:
-        # Create a new workbook if not found
         wb = Workbook()
         ws = wb.active
         ws.append(['Date and Time', 'Key (Base64)', 'Original Text', 'Encrypted Text'])
     else:
         ws = wb.active
 
-    # Append the new data along with the current date and time
     ws.append([date_time, key, original_text, encrypted_text])
     wb.save(filename)
     logging.info("Data saved to keys.xlsx")
@@ -63,6 +60,16 @@ def decrypt_data(ciphertext, nonce, tag, key):
         logging.error("Decryption failed.")
         return "Decryption failed."
 
+def assess_encryption_strength(ciphertext):
+    """Assess the strength of the encryption based on ciphertext length."""
+    length = len(ciphertext)
+    if length < 64:
+        return "Weak (less than 50%)"
+    elif length < 128:
+        return "Moderate (50% - 75%)"
+    else:
+        return "Strong (greater than 75%)"
+
 def encrypt_or_decrypt_flow():
     """Main flow for encrypting or decrypting based on user input."""
     choice = input("Would you like to input your own private key? (yes/no): ")
@@ -71,19 +78,19 @@ def encrypt_or_decrypt_flow():
     else:
         key, encoded_key = generate_private_key()
 
-    # Get user input for text to encrypt
     data = input("Please enter the text to encrypt: ")
     encrypted_data, nonce, tag = encrypt_data(data, key)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     save_data_to_excel(now, encoded_key, data, encrypted_data)
 
-    # Display encrypted data
     print("Encrypted Data:", encrypted_data)
+    print("Encryption Strength:", assess_encryption_strength(encrypted_data))
 
-    # Decrypt option
     if input("Do you want to decrypt this data now? (yes/no) ").lower() == 'yes':
         decrypted_data = decrypt_data(encrypted_data, nonce, tag, key)
         print("Decrypted Data:", decrypted_data)
+        if decrypted_data == data:
+            print("Encryption and decryption is successful.")
 
 if __name__ == '__main__':
     encrypt_or_decrypt_flow()

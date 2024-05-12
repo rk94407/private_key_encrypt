@@ -58,3 +58,11 @@ Execute by running the command:
 
    a. Excel Log: All private keys, along with the date and time of their creation or usage, are saved in an Excel file (keys.xlsx). This file also logs the original text and its encrypted form for each operation.
    b. Text File Log: Encrypted data is also logged in a separate text file (encryption.txt), providing a backup and an alternative view of the data.
+
+   ## Strength percentage
+
+   We are providing infromation on how strong the private key is based on the length of the private key and has 3 outputs: Strong, Moderate and Weak.
+
+   ## Confirmation message
+
+   A confirmation message gets displayed in the end when the original text matches the decrypted text: "Encryption and decryption was successful".
