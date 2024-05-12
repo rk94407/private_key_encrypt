@@ -15,6 +15,9 @@ Screenshot *.png
 Private Key Presentation.pptx
 
 # Excel
+~$keys.xlsx
+~$oup6_Project_Report.docx
+~$Private Key Presentation.pptx
 keys.xlsx
 *.xlsx
 .xls
