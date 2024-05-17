@@ -8,6 +8,7 @@ Before starting, ensure Python is installed on your system. If Python is not ins
 
 - `pycryptodome`
 - `python-dotenv`
+- 'qr-code'
 
 These libraries can be installed via pip or pip3. The script is tested and confirmed to work with Python 3.6 and newer.
 
@@ -17,7 +18,7 @@ These libraries can be installed via pip or pip3. The script is tested and confi
 
 Open your terminal or command prompt and execute the following command to install the necessary libraries:
 
-- `pip install pycryptodome python-dotenv`
+- `pip install pycryptodome python-dotenv qr-code`
 
 If you are using a system where Python 3 is not the default Python interpreter (e.g., systems where python points to Python 2.x), you might need to use pip3 instead:
 
