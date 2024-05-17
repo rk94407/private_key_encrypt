@@ -67,5 +67,11 @@ Execute by running the command:
 
    A confirmation message gets displayed in the end when the original text matches the decrypted text: "Encryption and decryption was successful".
 
+# QR Code Implementation
+1. The script now generates a QR code containing the private key.
+2. This QR code can be scanned by authorized users to securely obtain the private key for decryption.
+
 # This is git-hub repo
-https://github.com/rk94407/private_key_encrypt
+The codebase is available on GitHub: <a href="https://github.com/rk94407/private_key_encrypt"> private_key_encrypt </a>
+
+Feel free to clone or fork the repository for your use. Contributions are welcome!
