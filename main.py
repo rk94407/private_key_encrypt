@@ -1,3 +1,4 @@
+#For google colab
 import os
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -6,6 +7,11 @@ from Crypto.Hash import SHA256
 import base64
 import logging
 from datetime import datetime
+import qrcode
+import time
+from PIL import Image
+import io
+from IPython.display import display
 
 # Set up basic configuration for logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -25,7 +31,7 @@ def generate_private_key():
     encoded_key = base64.b64encode(private_key).decode('utf-8')
     return private_key, encoded_key
 
-def save_data_to_excel(date_time, key, original_text, encrypted_text):
+def save_data_to_excel(date_time, key, original_text, encrypted_text, qr_code_path):
     """Save the data to an Excel file."""
     filename = 'keys.xlsx'
     try:
@@ -33,11 +39,11 @@ def save_data_to_excel(date_time, key, original_text, encrypted_text):
     except FileNotFoundError:
         wb = Workbook()
         ws = wb.active
-        ws.append(['Date and Time', 'Key (Base64)', 'Original Text', 'Encrypted Text'])
+        ws.append(['Date and Time', 'Key (Base64)', 'Original Text', 'Encrypted Text', 'QR Code'])
     else:
         ws = wb.active
 
-    ws.append([date_time, key, original_text, encrypted_text])
+    ws.append([date_time, key, original_text, encrypted_text, qr_code_path])
     wb.save(filename)
     logging.info("Data saved to keys.xlsx")
 
@@ -70,6 +76,33 @@ def assess_encryption_strength(ciphertext):
     else:
         return "Strong (greater than 75%)"
 
+def generate_qr_code(data):
+    """Generate QR code from data and save it."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Generate a filename based on the current timestamp
+    timestamp = int(time.time())
+    qr_code_path = f"qr_code_{timestamp}.png"
+
+    # Save the image
+    img.save(qr_code_path)
+    
+    return qr_code_path
+
+def display_qr_code(qr_code_path):
+    """Display QR code image."""
+    image = Image.open(qr_code_path)
+    display(image)
+
 def encrypt_or_decrypt_flow():
     """Main flow for encrypting or decrypting based on user input."""
     choice = input("Would you like to input your own private key? (yes/no): ")
@@ -81,10 +114,16 @@ def encrypt_or_decrypt_flow():
     data = input("Please enter the text to encrypt: ")
     encrypted_data, nonce, tag = encrypt_data(data, key)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    save_data_to_excel(now, encoded_key, data, encrypted_data)
+    
+    # Generate QR code for the private key
+    qr_code_path = generate_qr_code(encoded_key)
+    
+    save_data_to_excel(now, encoded_key, data, encrypted_data, qr_code_path)
 
     print("Encrypted Data:", encrypted_data)
     print("Encryption Strength:", assess_encryption_strength(encrypted_data))
+    print("QR Code:")
+    display_qr_code(qr_code_path)
 
     if input("Do you want to decrypt this data now? (yes/no) ").lower() == 'yes':
         decrypted_data = decrypt_data(encrypted_data, nonce, tag, key)
