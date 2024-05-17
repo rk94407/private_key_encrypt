@@ -22,7 +22,7 @@ Open your terminal or command prompt and execute the following command to instal
 
 If you are using a system where Python 3 is not the default Python interpreter (e.g., systems where python points to Python 2.x), you might need to use pip3 instead:
 
-- `pip3 install pycryptodome python-dotenv`
+- `pip3 install pycryptodome python-dotenv qr-code`
 
 ## 2. Environment Configuration
 
